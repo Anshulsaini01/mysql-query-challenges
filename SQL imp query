@@ -1,0 +1,1000 @@
+Last login: Thu Jul 31 22:31:48 on ttys000
+(base) apple@apples-MacBook-Pro ~ % mysql -p root -u
+mysql: [ERROR] mysql: option '-u' requires an argument
+(base) apple@apples-MacBook-Pro ~ % mysql -u root -p
+Enter password: 
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 9
+Server version: 8.0.28 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2018, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> use pizza;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> select * from salesman_01;
++-------------+------------+----------+------------+
+| salesman_id | name       | city     | commission |
++-------------+------------+----------+------------+
+|        5001 | James Hoog | New York |          0 |
+|        5002 | Nail Knite | Paris    |          0 |
+|        5005 | Pit Alex   | London   |          0 |
+|        5006 | Mc Lyon    | Pairs    |          0 |
+|        5007 | Paul Adam  | Rome     |          0 |
+|        5003 | Lauson Hen | San Jose |          0 |
++-------------+------------+----------+------------+
+6 rows in set (0.01 sec)
+
+mysql> ALTER TABLE salesman_01
+    -> MODIFY COLUMN commission varchar(20);
+Query OK, 6 rows affected (0.07 sec)
+Records: 6  Duplicates: 0  Warnings: 0
+
+mysql> UPDATE salesman_01
+    -> SET commission = 
+    -> CASE 
+    -> WHEN commission = 0 THEN 0.15;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 4
+mysql> UPDATE salesman_01 SET commission = 0.15 WHERE salesman_id = 5001;
+Query OK, 1 row affected (0.01 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> select * from salesman_01;
++-------------+------------+----------+------------+
+| salesman_id | name       | city     | commission |
++-------------+------------+----------+------------+
+|        5001 | James Hoog | New York | 0.15       |
+|        5002 | Nail Knite | Paris    | 0          |
+|        5005 | Pit Alex   | London   | 0          |
+|        5006 | Mc Lyon    | Pairs    | 0          |
+|        5007 | Paul Adam  | Rome     | 0          |
+|        5003 | Lauson Hen | San Jose | 0          |
++-------------+------------+----------+------------+
+6 rows in set (0.00 sec)
+
+mysql> UPDATE salesman_01 SET commission = 0.13 WHERE salesman_id = 5002
+    -> (commission = 0.11 WHERE salesman_id = 5005),
+    -> (commission = 0.14 WHERE salesman_id = 5006),
+    -> (commission = 0.13 WHERE salesman_id = 5007),
+    -> (commission = 0.12 WHERE salesman_id = 5003);
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '(commission = 0.11 WHERE salesman_id = 5005),
+(commission = 0.14 WHERE salesman_' at line 2
+mysql> UPDATE salesman_01 SET commission = 0.13 WHERE salesman_id = 5002;
+Query OK, 1 row affected (0.01 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> UPDATE salesman_01 SET (commission = 0.13 WHERE salesman_id = 5002;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '(commission = 0.13 WHERE salesman_id = 5002' at line 1
+mysql> UPDATE salesman_01 SET (commission = 0.11 WHERE salesman_id = 5005)
+    -> (commission = 0.14 WHERE salesman_id = 5006);
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '(commission = 0.11 WHERE salesman_id = 5005)
+(commission = 0.14 WHERE salesman_i' at line 1
+mysql> UPDATE salesman_01 SET (commission = 0.11 WHERE salesman_id = 5005);
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '(commission = 0.11 WHERE salesman_id = 5005)' at line 1
+mysql> UPDATE salesman_01 SET commission = 0.11 WHERE salesman_id = 5005;
+Query OK, 1 row affected (0.00 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> UPDATE salesman_01 SET commission = 0.14 WHERE salesman_id = 5006
+    -> and
+    -> commission = 0.13 WHERE salesman_id = 5007;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'WHERE salesman_id = 5007' at line 3
+mysql> UPDATE salesman_01 SET commission = 0.14 WHERE salesman_id = 5006;
+Query OK, 1 row affected (0.00 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> UPDATE salesman_01 SET commission = 0.13 WHERE salesman_id = 5007;
+Query OK, 1 row affected (0.01 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> UPDATE salesman_01 SET commission = 0.12 WHERE salesman_id = 5003;
+Query OK, 1 row affected (0.00 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> select * from salesman_01;
++-------------+------------+----------+------------+
+| salesman_id | name       | city     | commission |
++-------------+------------+----------+------------+
+|        5001 | James Hoog | New York | 0.15       |
+|        5002 | Nail Knite | Paris    | 0.13       |
+|        5005 | Pit Alex   | London   | 0.11       |
+|        5006 | Mc Lyon    | Pairs    | 0.14       |
+|        5007 | Paul Adam  | Rome     | 0.13       |
+|        5003 | Lauson Hen | San Jose | 0.12       |
++-------------+------------+----------+------------+
+6 rows in set (0.00 sec)
+
+mysql> select name , city from salesman_01 
+    -> where city = 'Paris';
++------------+-------+
+| name       | city  |
++------------+-------+
+| Nail Knite | Paris |
++------------+-------+
+1 row in set (0.00 sec)
+
+mysql> select * from salesman_01 
+    -> where commission BETWEEN 0.10 TO 0.12;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'TO 0.12' at line 2
+mysql> select * from salesman_01  where commission BETWEEN 0.10 , 0.12;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ', 0.12' at line 1
+mysql> select * from salesman_01  where commission BETWEEN (0.10 , 0.12);
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1
+mysql> select * from salesman_01  where commission BETWEEN (0.10 , 0.12);
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1
+mysql> select * from salesman_01  where commission BETWEEN 0.10 AND 0.12;
++-------------+------------+----------+------------+
+| salesman_id | name       | city     | commission |
++-------------+------------+----------+------------+
+|        5005 | Pit Alex   | London   | 0.11       |
+|        5003 | Lauson Hen | San Jose | 0.12       |
++-------------+------------+----------+------------+
+2 rows in set (0.00 sec)
+
+mysql> select name , city from salesman_01  where city in ('Paris','Rome');
++------------+-------+
+| name       | city  |
++------------+-------+
+| Nail Knite | Paris |
+| Paul Adam  | Rome  |
++------------+-------+
+2 rows in set (0.00 sec)
+
+mysql> select name , city from salesman_01  where city not in ('Paris','Rome');
++------------+----------+
+| name       | city     |
++------------+----------+
+| James Hoog | New York |
+| Pit Alex   | London   |
+| Mc Lyon    | Pairs    |
+| Lauson Hen | San Jose |
++------------+----------+
+4 rows in set (0.00 sec)
+
+mysql> select * from salesman_01  where commission BETWEEN 0.12 AND 0.14;
++-------------+------------+----------+------------+
+| salesman_id | name       | city     | commission |
++-------------+------------+----------+------------+
+|        5002 | Nail Knite | Paris    | 0.13       |
+|        5006 | Mc Lyon    | Pairs    | 0.14       |
+|        5007 | Paul Adam  | Rome     | 0.13       |
+|        5003 | Lauson Hen | San Jose | 0.12       |
++-------------+------------+----------+------------+
+4 rows in set (0.00 sec)
+
+mysql> select * from salesman_01
+    -> where name = 'A%' AND 'L%';
+Empty set, 1 warning (0.01 sec)
+
+mysql> select * from salesman_01 where name = 'A%' OR 'L%';
+Empty set, 1 warning (0.00 sec)
+
+mysql> select * from salesman_01 where name = 'L%';
+Empty set (0.00 sec)
+
+mysql> select * from salesman_01
+    -> where name BETWEEN 'A'AND 'L';
++-------------+------------+----------+------------+
+| salesman_id | name       | city     | commission |
++-------------+------------+----------+------------+
+|        5001 | James Hoog | New York | 0.15       |
++-------------+------------+----------+------------+
+1 row in set (0.09 sec)
+
+mysql> SELECT * FROM salesman_01 
+    -> where name >= 'A' and name <= 'L';
++-------------+------------+----------+------------+
+| salesman_id | name       | city     | commission |
++-------------+------------+----------+------------+
+|        5001 | James Hoog | New York | 0.15       |
++-------------+------------+----------+------------+
+1 row in set (0.00 sec)
+
+mysql> SELECT * FROM salesman_01  where name !>= 'A' and name !<= 'L';
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '!>= 'A' and name !<= 'L'' at line 1
+mysql> SELECT * FROM salesman_01  where name <>= 'A' and name <>= 'L';
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '<>= 'A' and name <>= 'L'' at line 1
+mysql> SELECT * FROM salesman_01  where name <= 'A' and name >= 'L';
+Empty set (0.00 sec)
+
+mysql> SELECT * FROM salesman_01  where name <= 'A' or name >= 'L';
++-------------+------------+----------+------------+
+| salesman_id | name       | city     | commission |
++-------------+------------+----------+------------+
+|        5002 | Nail Knite | Paris    | 0.13       |
+|        5005 | Pit Alex   | London   | 0.11       |
+|        5006 | Mc Lyon    | Pairs    | 0.14       |
+|        5007 | Paul Adam  | Rome     | 0.13       |
+|        5003 | Lauson Hen | San Jose | 0.12       |
++-------------+------------+----------+------------+
+5 rows in set (0.00 sec)
+
+mysql> SELECT * FROM salesman_01  where name <= 'A' or name > 'L';
++-------------+------------+----------+------------+
+| salesman_id | name       | city     | commission |
++-------------+------------+----------+------------+
+|        5002 | Nail Knite | Paris    | 0.13       |
+|        5005 | Pit Alex   | London   | 0.11       |
+|        5006 | Mc Lyon    | Pairs    | 0.14       |
+|        5007 | Paul Adam  | Rome     | 0.13       |
+|        5003 | Lauson Hen | San Jose | 0.12       |
++-------------+------------+----------+------------+
+5 rows in set (0.00 sec)
+
+mysql> select * from salesman_01
+    -> where name = 'N___I%';
+Empty set (0.00 sec)
+
+mysql> select * from salesman_01 where name = 'N__L%';
+Empty set (0.00 sec)
+
+mysql> select * from salesman_01 where name = 'N___l%';
+Empty set (0.00 sec)
+
+mysql> select * from salesman_01 where name = 'N__l%';
+Empty set (0.00 sec)
+
+mysql> select * from salesman_01 where name LIKE 'N__l%';
++-------------+------------+-------+------------+
+| salesman_id | name       | city  | commission |
++-------------+------------+-------+------------+
+|        5002 | Nail Knite | Paris | 0.13       |
++-------------+------------+-------+------------+
+1 row in set (0.00 sec)
+
+mysql> select count(salesman_id),city from salesman_01 group by city;
++--------------------+----------+
+| count(salesman_id) | city     |
++--------------------+----------+
+|                  1 | New York |
+|                  1 | Paris    |
+|                  1 | London   |
+|                  1 | Pairs    |
+|                  1 | Rome     |
+|                  1 | San Jose |
++--------------------+----------+
+6 rows in set (0.00 sec)
+
+mysql> CREATE TABLE customer_09 
+    -> (cust_id int,
+    -> cust_name int,
+    -> city ;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 4
+mysql> CREATE TABLE customer_09  (cust_id int, cust_name varchar(20),
+    -> city varchar(30),
+    -> grade int,
+    -> salesman_id int);
+Query OK, 0 rows affected (0.17 sec)
+
+mysql> INSERT INTO VALUES 
+    -> (3002,'Nick Rimando','New York',100,5001),
+    -> (3007,'Brad Davis','New York',200,5001),
+    -> (3005,'Graham Zusi','California',200,5002),
+    -> (3008,'Julian Green','London',300,5002),
+    -> (3004,'Fabian Johnson','Paris',300,5006),
+    -> (3009,'Geoff Cameron','Berlin',100,5003),
+    -> (3003,'Jozy Altidor','Mascow',200,5007),
+    -> (3001,'Brad Guzan','London',null,5005);
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'VALUES 
+(3002,'Nick Rimando','New York',100,5001),
+(3007,'Brad Davis','New York'' at line 1
+mysql> INSERT INTO VALUES  (3002,'Nick Rimando','New York',100,5001), (3007,'Brad Davis','New York',200,5001), (3005,'Graham Zusi','California',200,5002), (3008,'Julian Green','London',300,5002), (3004,'Fabian Johnson','Paris',300,5006), (3009,'Geoff Cameron','Berlin',100,5003), (3003,'Jozy Altidor','Mascow',200,5007), (3001,'Brad Guzan','London','null',5005);
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'VALUES  (3002,'Nick Rimando','New York',100,5001), (3007,'Brad Davis','New York'' at line 1
+mysql> INSERT INTO VALUES  (3002,'Nick Rimando','New York',100,5001), (3007,'Brad Davis','New York',200,5001), (3005,'Graham Zusi','California',200,5002), (3008,'Julian Green','London',300,5002), (3004,'Fabian Johnson','Paris',300,5006), (3009,'Geoff Cameron','Berlin',100,5003), (3003,'Jozy Altidor','Mascow',200,5007); 
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'VALUES  (3002,'Nick Rimando','New York',100,5001), (3007,'Brad Davis','New York'' at line 1
+mysql> INSERT INTO customer_09 VALUES  (3002,'Nick Rimando','New York',100,5001)
+, (3007                                                                         5002                                                                            00,
+',200,
+Query OK, 7 rows affected (0.01 sec)
+Records: 7  Duplicates: 0  Warnings: 0
+
+mysql> select * from customer_09;
++---------+----------------+------------+-------+-------------+
+| cust_id | cust_name      | city       | grade | salesman_id |
++---------+----------------+------------+-------+-------------+
+|    3002 | Nick Rimando   | New York   |   100 |        5001 |
+|    3007 | Brad Davis     | New York   |   200 |        5001 |
+|    3005 | Graham Zusi    | California |   200 |        5002 |
+|    3008 | Julian Green   | London     |   300 |        5002 |
+|    3004 | Fabian Johnson | Paris      |   300 |        5006 |
+|    3009 | Geoff Cameron  | Berlin     |   100 |        5003 |
+|    3003 | Jozy Altidor   | Mascow     |   200 |        5007 |
++---------+----------------+------------+-------+-------------+
+7 rows in set (0.01 sec)
+
+mysql> insert into cutomer_09 values(3001,'Brad Guzan','London',null,5005);
+ERROR 1146 (42S02): Table 'pizza.cutomer_09' doesn't exist
+mysql> insert into customer_09 values(3001,'Brad Guzan','London',null,5005);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from customer_09;
++---------+----------------+------------+-------+-------------+
+| cust_id | cust_name      | city       | grade | salesman_id |
++---------+----------------+------------+-------+-------------+
+|    3002 | Nick Rimando   | New York   |   100 |        5001 |
+|    3007 | Brad Davis     | New York   |   200 |        5001 |
+|    3005 | Graham Zusi    | California |   200 |        5002 |
+|    3008 | Julian Green   | London     |   300 |        5002 |
+|    3004 | Fabian Johnson | Paris      |   300 |        5006 |
+|    3009 | Geoff Cameron  | Berlin     |   100 |        5003 |
+|    3003 | Jozy Altidor   | Mascow     |   200 |        5007 |
+|    3001 | Brad Guzan     | London     |  NULL |        5005 |
++---------+----------------+------------+-------+-------------+
+8 rows in set (0.00 sec)
+
+mysql> select * from customer_09
+    -> where grade = 200;
++---------+--------------+------------+-------+-------------+
+| cust_id | cust_name    | city       | grade | salesman_id |
++---------+--------------+------------+-------+-------------+
+|    3007 | Brad Davis   | New York   |   200 |        5001 |
+|    3005 | Graham Zusi  | California |   200 |        5002 |
+|    3003 | Jozy Altidor | Mascow     |   200 |        5007 |
++---------+--------------+------------+-------+-------------+
+3 rows in set (0.01 sec)
+
+mysql> select * from customer_09 where grade > 100;
++---------+----------------+------------+-------+-------------+
+| cust_id | cust_name      | city       | grade | salesman_id |
++---------+----------------+------------+-------+-------------+
+|    3007 | Brad Davis     | New York   |   200 |        5001 |
+|    3005 | Graham Zusi    | California |   200 |        5002 |
+|    3008 | Julian Green   | London     |   300 |        5002 |
+|    3004 | Fabian Johnson | Paris      |   300 |        5006 |
+|    3003 | Jozy Altidor   | Mascow     |   200 |        5007 |
++---------+----------------+------------+-------+-------------+
+5 rows in set (0.01 sec)
+
+mysql> select * from customer_09 where grade > 100 and city = 'New York';
++---------+------------+----------+-------+-------------+
+| cust_id | cust_name  | city     | grade | salesman_id |
++---------+------------+----------+-------+-------------+
+|    3007 | Brad Davis | New York |   200 |        5001 |
++---------+------------+----------+-------+-------------+
+1 row in set (0.00 sec)
+
+mysql> select * from customer_09 where grade < 100 and city = 'New York';
+Empty set (0.00 sec)
+
+mysql> select * from customer_09 where grade = 100 and city = 'New York';
++---------+--------------+----------+-------+-------------+
+| cust_id | cust_name    | city     | grade | salesman_id |
++---------+--------------+----------+-------+-------------+
+|    3002 | Nick Rimando | New York |   100 |        5001 |
++---------+--------------+----------+-------+-------------+
+1 row in set (0.00 sec)
+
+mysql> select * from customer_09 where grade > 100 and city = 'New York';
++---------+------------+----------+-------+-------------+
+| cust_id | cust_name  | city     | grade | salesman_id |
++---------+------------+----------+-------+-------------+
+|    3007 | Brad Davis | New York |   200 |        5001 |
++---------+------------+----------+-------+-------------+
+1 row in set (0.00 sec)
+
+mysql> select * from customer_09 where grade <= 100 or  city = 'New York';
++---------+---------------+----------+-------+-------------+
+| cust_id | cust_name     | city     | grade | salesman_id |
++---------+---------------+----------+-------+-------------+
+|    3002 | Nick Rimando  | New York |   100 |        5001 |
+|    3007 | Brad Davis    | New York |   200 |        5001 |
+|    3009 | Geoff Cameron | Berlin   |   100 |        5003 |
++---------+---------------+----------+-------+-------------+
+3 rows in set (0.00 sec)
+
+mysql> select * from customer_09 where cust_id in (3007,3008,3009);
++---------+---------------+----------+-------+-------------+
+| cust_id | cust_name     | city     | grade | salesman_id |
++---------+---------------+----------+-------+-------------+
+|    3007 | Brad Davis    | New York |   200 |        5001 |
+|    3008 | Julian Green  | London   |   300 |        5002 |
+|    3009 | Geoff Cameron | Berlin   |   100 |        5003 |
++---------+---------------+----------+-------+-------------+
+3 rows in set (0.01 sec)
+
+mysql> select * from customer_09 where name LIKE 'B%';
+ERROR 1054 (42S22): Unknown column 'name' in 'where clause'
+mysql> select * from customer_09 where cust_name LIKE 'B%';
++---------+------------+----------+-------+-------------+
+| cust_id | cust_name  | city     | grade | salesman_id |
++---------+------------+----------+-------+-------------+
+|    3007 | Brad Davis | New York |   200 |        5001 |
+|    3001 | Brad Guzan | London   |  NULL |        5005 |
++---------+------------+----------+-------+-------------+
+2 rows in set (0.00 sec)
+
+mysql> select * from customer_09 where cust_name LIKE '%n';
++---------+----------------+--------+-------+-------------+
+| cust_id | cust_name      | city   | grade | salesman_id |
++---------+----------------+--------+-------+-------------+
+|    3008 | Julian Green   | London |   300 |        5002 |
+|    3004 | Fabian Johnson | Paris  |   300 |        5006 |
+|    3009 | Geoff Cameron  | Berlin |   100 |        5003 |
+|    3001 | Brad Guzan     | London |  NULL |        5005 |
++---------+----------------+--------+-------+-------------+
+4 rows in set (0.00 sec)
+
+mysql> select * from customer_09 where grade is null;
++---------+------------+--------+-------+-------------+
+| cust_id | cust_name  | city   | grade | salesman_id |
++---------+------------+--------+-------+-------------+
+|    3001 | Brad Guzan | London |  NULL |        5005 |
++---------+------------+--------+-------+-------------+
+1 row in set (0.00 sec)
+
+mysql> select * from customer_09 where grade is not null;
++---------+----------------+------------+-------+-------------+
+| cust_id | cust_name      | city       | grade | salesman_id |
++---------+----------------+------------+-------+-------------+
+|    3002 | Nick Rimando   | New York   |   100 |        5001 |
+|    3007 | Brad Davis     | New York   |   200 |        5001 |
+|    3005 | Graham Zusi    | California |   200 |        5002 |
+|    3008 | Julian Green   | London     |   300 |        5002 |
+|    3004 | Fabian Johnson | Paris      |   300 |        5006 |
+|    3009 | Geoff Cameron  | Berlin     |   100 |        5003 |
+|    3003 | Jozy Altidor   | Mascow     |   200 |        5007 |
++---------+----------------+------------+-------+-------------+
+7 rows in set (0.00 sec)
+
+mysql> select max(grade) as hightest_gra ,city from customer_09
+    -> group by city;
++--------------+------------+
+| hightest_gra | city       |
++--------------+------------+
+|          200 | New York   |
+|          200 | California |
+|          300 | London     |
+|          300 | Paris      |
+|          100 | Berlin     |
+|          200 | Mascow     |
++--------------+------------+
+6 rows in set (0.00 sec)
+
+mysql> CREATE TABLE nobel_win (
+    ->     YEAR INT,
+    ->     SUBJECT VARCHAR(50),
+    ->     WINNER VARCHAR(100),
+    ->     COUNTRY VARCHAR(50),
+    ->     CATEGORY VARCHAR(50)
+    -> );
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> INSERT INTO nobel_win (YEAR, SUBJECT, WINNER, COUNTRY, CATEGORY) VALUES
+    -> (1970, 'Physics', 'Hannes Alfven', 'Sweden', 'Scientist'),
+    -> (1970, 'Physics', 'Louis Neel', 'France', 'Scientist'),
+    -> (1970, 'Chemistry', 'Luis Federico Leloir', 'France', 'Scientist'),
+    -> (1970, 'Physiology', 'Ulf von Euler', 'Sweden', 'Scientist'),
+    -> (1970, 'Physiology', 'Bernard Katz', 'Germany', 'Scientist'),
+    -> (1970, 'Literature', 'Aleksandr Solzhenitsyn', 'Russia', 'Linguist'),
+    -> (1970, 'Economics', 'Paul Samuelson', 'USA', 'Economist'),
+    -> (1970, 'Physiology', 'Julius Axelrod', 'USA', 'Scientist'),
+    -> (1971, 'Physics', 'Dennis Gabor', 'Hungary', 'Scientist'),
+    -> (1971, 'Chemistry', 'Gerhard Herzberg', 'Germany', 'Scientist'),
+    -> (1971, 'Peace', 'Willy Brandt', 'Germany', 'Chancellor'),
+    -> (1971, 'Literature', 'Pablo Neruda', 'Chile', 'Linguist'),
+    -> (1971, 'Economics', 'Simon Kuznets', 'Russia', 'Economist'),
+    -> (1978, 'Peace', 'Anwar al-Sadat', 'Egypt', 'President'),
+    -> (1978, 'Peace', 'Menachem Begin', 'Israel', 'Prime Minister'),
+    -> (1987, 'Chemistry', 'Donald J. Cram', 'USA', 'Scientist'),
+    -> (1987, 'Chemistry', 'Jean-Marie Lehn', 'France', 'Scientist'),
+    -> (1987, 'Physiology', 'Susumu Tonegawa', 'Japan', 'Scientist'),
+    -> (1994, 'Economics', 'Reinhard Selten', 'Germany', 'Economist'),
+    -> (1994, 'Peace', 'Yitzhak Rabin', 'Israel', 'Prime Minister'),
+    -> (1987, 'Physics', 'Johannes Georg Bednorz', 'Germany', 'Scientist'),
+    -> (1987, 'Literature', 'Joseph Brodsky', 'Russia', 'Linguist'),
+    -> (1987, 'Economics', 'Robert Solow', 'USA', 'Economist'),
+    -> (1994, 'Literature', 'Kenzaburo Oe', 'Japan', 'Linguist');
+Query OK, 24 rows affected (0.00 sec)
+Records: 24  Duplicates: 0  Warnings: 0
+
+mysql> select * from nobel_win;
++------+------------+------------------------+---------+----------------+
+| YEAR | SUBJECT    | WINNER                 | COUNTRY | CATEGORY       |
++------+------------+------------------------+---------+----------------+
+| 1970 | Physics    | Hannes Alfven          | Sweden  | Scientist      |
+| 1970 | Physics    | Louis Neel             | France  | Scientist      |
+| 1970 | Chemistry  | Luis Federico Leloir   | France  | Scientist      |
+| 1970 | Physiology | Ulf von Euler          | Sweden  | Scientist      |
+| 1970 | Physiology | Bernard Katz           | Germany | Scientist      |
+| 1970 | Literature | Aleksandr Solzhenitsyn | Russia  | Linguist       |
+| 1970 | Economics  | Paul Samuelson         | USA     | Economist      |
+| 1970 | Physiology | Julius Axelrod         | USA     | Scientist      |
+| 1971 | Physics    | Dennis Gabor           | Hungary | Scientist      |
+| 1971 | Chemistry  | Gerhard Herzberg       | Germany | Scientist      |
+| 1971 | Peace      | Willy Brandt           | Germany | Chancellor     |
+| 1971 | Literature | Pablo Neruda           | Chile   | Linguist       |
+| 1971 | Economics  | Simon Kuznets          | Russia  | Economist      |
+| 1978 | Peace      | Anwar al-Sadat         | Egypt   | President      |
+| 1978 | Peace      | Menachem Begin         | Israel  | Prime Minister |
+| 1987 | Chemistry  | Donald J. Cram         | USA     | Scientist      |
+| 1987 | Chemistry  | Jean-Marie Lehn        | France  | Scientist      |
+| 1987 | Physiology | Susumu Tonegawa        | Japan   | Scientist      |
+| 1994 | Economics  | Reinhard Selten        | Germany | Economist      |
+| 1994 | Peace      | Yitzhak Rabin          | Israel  | Prime Minister |
+| 1987 | Physics    | Johannes Georg Bednorz | Germany | Scientist      |
+| 1987 | Literature | Joseph Brodsky         | Russia  | Linguist       |
+| 1987 | Economics  | Robert Solow           | USA     | Economist      |
+| 1994 | Literature | Kenzaburo Oe           | Japan   | Linguist       |
++------+------------+------------------------+---------+----------------+
+24 rows in set (0.00 sec)
+
+mysql> select * form nobel_win 
+    -> where SUBJECT = 'Literature' AND YEAR = 1971;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'form nobel_win 
+where SUBJECT = 'Literature' AND YEAR = 1971' at line 1
+mysql> select * form nobel_win  where SUBJECT = 'Literature' AND YEAR = 1971;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'form nobel_win  where SUBJECT = 'Literature' AND YEAR = 1971' at line 1
+mysql> select * form nobel_win where SUBJECT = 'Literature' AND YEAR = 1971;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'form nobel_win where SUBJECT = 'Literature' AND YEAR = 1971' at line 1
+mysql> select * from nobel_win where SUBJECT = 'Literature' AND YEAR = 1971;
++------+------------+--------------+---------+----------+
+| YEAR | SUBJECT    | WINNER       | COUNTRY | CATEGORY |
++------+------------+--------------+---------+----------+
+| 1971 | Literature | Pablo Neruda | Chile   | Linguist |
++------+------------+--------------+---------+----------+
+1 row in set (0.00 sec)
+
+mysql> select * from nobel_win where WINNER = 'DENNIS GABOR';
++------+---------+--------------+---------+-----------+
+| YEAR | SUBJECT | WINNER       | COUNTRY | CATEGORY  |
++------+---------+--------------+---------+-----------+
+| 1971 | Physics | Dennis Gabor | Hungary | Scientist |
++------+---------+--------------+---------+-----------+
+1 row in set (0.00 sec)
+
+mysql> SELECT * from nobel_win where SUBJECT = 'PHYSICS' AND YEAR = 1950;
+Empty set (0.00 sec)
+
+mysql> SELECT * from nobel_win where SUBJECT = 'PHYSICS' AND YEAR BETWEEN 1965 TO 1965;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'TO 1965' at line 1
+mysql> SELECT * from nobel_win where SUBJECT = 'chemistry' AND YEAR BETWEEN 1965
+ and 1965;
+Empty set (0.00 sec)
+
+mysql> SELECT * from nobel_win where SUBJECT = 'chemistry' AND YEAR BETWEEN 1965 and 1975;
++------+-----------+----------------------+---------+-----------+
+| YEAR | SUBJECT   | WINNER               | COUNTRY | CATEGORY  |
++------+-----------+----------------------+---------+-----------+
+| 1970 | Chemistry | Luis Federico Leloir | France  | Scientist |
+| 1971 | Chemistry | Gerhard Herzberg     | Germany | Scientist |
++------+-----------+----------------------+---------+-----------+
+2 rows in set (0.00 sec)
+
+mysql> select * from nobrl_win where winner = 'ministrial' and year > 1972;
+ERROR 1146 (42S02): Table 'pizza.nobrl_win' doesn't exist
+mysql> select * from nobrl_win where year > 1972 and winner in (Menachem Begin,Yitzhak Rabin);
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'Begin,Yitzhak Rabin)' at line 1
+mysql> select * from nobal_win where year > 1972 and winner in (Menachem Begin,Yitzhak Rabin);
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'Begin,Yitzhak Rabin)' at line 1
+mysql> select * from nobel_win where year > 1972 and winner in (Menachem Begin,Yitzhak Rabin);
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'Begin,Yitzhak Rabin)' at line 1
+mysql> select * from nobel_win where year > 1972 and winner in ('Menachem Begin','Yitzhak Rabin');
++------+---------+----------------+---------+----------------+
+| YEAR | SUBJECT | WINNER         | COUNTRY | CATEGORY       |
++------+---------+----------------+---------+----------------+
+| 1978 | Peace   | Menachem Begin | Israel  | Prime Minister |
+| 1994 | Peace   | Yitzhak Rabin  | Israel  | Prime Minister |
++------+---------+----------------+---------+----------------+
+2 rows in set (0.00 sec)
+
+mysql> select * from nobel_win winner LIKE ('Louis%';)
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'LIKE ('Louis%'' at line 1
+    -> ;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ')' at line 1
+mysql> select * from nobel_win winner LIKE ('Louis%');
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'LIKE ('Louis%')' at line 1
+mysql> select * from nobel_win where winner LIKE ('Louis%');
++------+---------+------------+---------+-----------+
+| YEAR | SUBJECT | WINNER     | COUNTRY | CATEGORY  |
++------+---------+------------+---------+-----------+
+| 1970 | Physics | Louis Neel | France  | Scientist |
++------+---------+------------+---------+-----------+
+1 row in set (0.00 sec)
+
+mysql> select * from nobel_win where subject in ('physics','Economics') and year in (1970,1971);
++------+-----------+----------------+---------+-----------+
+| YEAR | SUBJECT   | WINNER         | COUNTRY | CATEGORY  |
++------+-----------+----------------+---------+-----------+
+| 1970 | Physics   | Hannes Alfven  | Sweden  | Scientist |
+| 1970 | Physics   | Louis Neel     | France  | Scientist |
+| 1970 | Economics | Paul Samuelson | USA     | Economist |
+| 1971 | Physics   | Dennis Gabor   | Hungary | Scientist |
+| 1971 | Economics | Simon Kuznets  | Russia  | Economist |
++------+-----------+----------------+---------+-----------+
+5 rows in set (0.00 sec)
+
+mysql> select * from nobel_win
+    -> where (year = 1970 and subject = 'Physics')
+    -> or
+    -> (year = 1971 and subject = 'Economics');
++------+-----------+---------------+---------+-----------+
+| YEAR | SUBJECT   | WINNER        | COUNTRY | CATEGORY  |
++------+-----------+---------------+---------+-----------+
+| 1970 | Physics   | Hannes Alfven | Sweden  | Scientist |
+| 1970 | Physics   | Louis Neel    | France  | Scientist |
+| 1971 | Economics | Simon Kuznets | Russia  | Economist |
++------+-----------+---------------+---------+-----------+
+3 rows in set (0.00 sec)
+
+mysql> select * from nobel_win where year = 1970 and subject not in ('Physiology','Economics');
++------+------------+------------------------+---------+-----------+
+| YEAR | SUBJECT    | WINNER                 | COUNTRY | CATEGORY  |
++------+------------+------------------------+---------+-----------+
+| 1970 | Physics    | Hannes Alfven          | Sweden  | Scientist |
+| 1970 | Physics    | Louis Neel             | France  | Scientist |
+| 1970 | Chemistry  | Luis Federico Leloir   | France  | Scientist |
+| 1970 | Literature | Aleksandr Solzhenitsyn | Russia  | Linguist  |
++------+------------+------------------------+---------+-----------+
+4 rows in set (0.00 sec)
+
+mysql> select * from nobel_win where (year = 1970 and subject = 'Physics') or (year = 1974 and subject = 'Peace';
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1
+mysql> select * from nobel_win where (year = 1970 and subject = 'Physics') or (year = 1974 and subject = 'Peace');
++------+---------+---------------+---------+-----------+
+| YEAR | SUBJECT | WINNER        | COUNTRY | CATEGORY  |
++------+---------+---------------+---------+-----------+
+| 1970 | Physics | Hannes Alfven | Sweden  | Scientist |
+| 1970 | Physics | Louis Neel    | France  | Scientist |
++------+---------+---------------+---------+-----------+
+2 rows in set (0.00 sec)
+
+mysql> select * from nobel_win where (year = 1971 and subject = 'Physiology') or
+ (year = 1974 and subject = 'Peace');
+Empty set (0.00 sec)
+
+mysql> select * from nobel_win where (year < 1971 and subject = 'Physiology') or
+ (year >  1974 and subject = 'Peace');
++------+------------+----------------+---------+----------------+
+| YEAR | SUBJECT    | WINNER         | COUNTRY | CATEGORY       |
++------+------------+----------------+---------+----------------+
+| 1970 | Physiology | Ulf von Euler  | Sweden  | Scientist      |
+| 1970 | Physiology | Bernard Katz   | Germany | Scientist      |
+| 1970 | Physiology | Julius Axelrod | USA     | Scientist      |
+| 1978 | Peace      | Anwar al-Sadat | Egypt   | President      |
+| 1978 | Peace      | Menachem Begin | Israel  | Prime Minister |
+| 1994 | Peace      | Yitzhak Rabin  | Israel  | Prime Minister |
++------+------------+----------------+---------+----------------+
+6 rows in set (0.01 sec)
+
+mysql> select * from nobrl_win where winner not Like 'p%'
+    -> order by year Desc and winner asc;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'and winner asc' at line 2
+mysql> select * from nobrl_win where winner Like 'p%' order by year Desc and winner asc;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'and winner asc' at line 1
+mysql> select * from nobrl_win where winner not Like 'p%' order by year Desc;
+ERROR 1146 (42S02): Table 'pizza.nobrl_win' doesn't exist
+mysql> select * from nobel_win where winner not Like 'p%' order by year Desc;
++------+------------+------------------------+---------+----------------+
+| YEAR | SUBJECT    | WINNER                 | COUNTRY | CATEGORY       |
++------+------------+------------------------+---------+----------------+
+| 1994 | Economics  | Reinhard Selten        | Germany | Economist      |
+| 1994 | Peace      | Yitzhak Rabin          | Israel  | Prime Minister |
+| 1994 | Literature | Kenzaburo Oe           | Japan   | Linguist       |
+| 1987 | Chemistry  | Donald J. Cram         | USA     | Scientist      |
+| 1987 | Chemistry  | Jean-Marie Lehn        | France  | Scientist      |
+| 1987 | Physiology | Susumu Tonegawa        | Japan   | Scientist      |
+| 1987 | Physics    | Johannes Georg Bednorz | Germany | Scientist      |
+| 1987 | Literature | Joseph Brodsky         | Russia  | Linguist       |
+| 1987 | Economics  | Robert Solow           | USA     | Economist      |
+| 1978 | Peace      | Anwar al-Sadat         | Egypt   | President      |
+| 1978 | Peace      | Menachem Begin         | Israel  | Prime Minister |
+| 1971 | Physics    | Dennis Gabor           | Hungary | Scientist      |
+| 1971 | Chemistry  | Gerhard Herzberg       | Germany | Scientist      |
+| 1971 | Peace      | Willy Brandt           | Germany | Chancellor     |
+| 1971 | Economics  | Simon Kuznets          | Russia  | Economist      |
+| 1970 | Physics    | Hannes Alfven          | Sweden  | Scientist      |
+| 1970 | Physics    | Louis Neel             | France  | Scientist      |
+| 1970 | Chemistry  | Luis Federico Leloir   | France  | Scientist      |
+| 1970 | Physiology | Ulf von Euler          | Sweden  | Scientist      |
+| 1970 | Physiology | Bernard Katz           | Germany | Scientist      |
+| 1970 | Literature | Aleksandr Solzhenitsyn | Russia  | Linguist       |
+| 1970 | Physiology | Julius Axelrod         | USA     | Scientist      |
++------+------------+------------------------+---------+----------------+
+22 rows in set (0.00 sec)
+
+mysql> select * from nobel_win where winner not Like 'p%' order by year Desc and  winner asc;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'and  winner asc' at line 1
+mysql> select * from nobel_win where winner not Like 'p%' order by year Desc and order by winner ;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'and order by winner' at line 1
+mysql> select * from nobel_win where winner not Like 'p%' order by year Desc,winner;
++------+------------+------------------------+---------+----------------+
+| YEAR | SUBJECT    | WINNER                 | COUNTRY | CATEGORY       |
++------+------------+------------------------+---------+----------------+
+| 1994 | Literature | Kenzaburo Oe           | Japan   | Linguist       |
+| 1994 | Economics  | Reinhard Selten        | Germany | Economist      |
+| 1994 | Peace      | Yitzhak Rabin          | Israel  | Prime Minister |
+| 1987 | Chemistry  | Donald J. Cram         | USA     | Scientist      |
+| 1987 | Chemistry  | Jean-Marie Lehn        | France  | Scientist      |
+| 1987 | Physics    | Johannes Georg Bednorz | Germany | Scientist      |
+| 1987 | Literature | Joseph Brodsky         | Russia  | Linguist       |
+| 1987 | Economics  | Robert Solow           | USA     | Economist      |
+| 1987 | Physiology | Susumu Tonegawa        | Japan   | Scientist      |
+| 1978 | Peace      | Anwar al-Sadat         | Egypt   | President      |
+| 1978 | Peace      | Menachem Begin         | Israel  | Prime Minister |
+| 1971 | Physics    | Dennis Gabor           | Hungary | Scientist      |
+| 1971 | Chemistry  | Gerhard Herzberg       | Germany | Scientist      |
+| 1971 | Economics  | Simon Kuznets          | Russia  | Economist      |
+| 1971 | Peace      | Willy Brandt           | Germany | Chancellor     |
+| 1970 | Literature | Aleksandr Solzhenitsyn | Russia  | Linguist       |
+| 1970 | Physiology | Bernard Katz           | Germany | Scientist      |
+| 1970 | Physics    | Hannes Alfven          | Sweden  | Scientist      |
+| 1970 | Physiology | Julius Axelrod         | USA     | Scientist      |
+| 1970 | Physics    | Louis Neel             | France  | Scientist      |
+| 1970 | Chemistry  | Luis Federico Leloir   | France  | Scientist      |
+| 1970 | Physiology | Ulf von Euler          | Sweden  | Scientist      |
++------+------------+------------------------+---------+----------------+
+22 rows in set (0.00 sec)
+
+mysql> select * from nobel_win where winner not Like 'p%' order by year Desc,winner asc;
++------+------------+------------------------+---------+----------------+
+| YEAR | SUBJECT    | WINNER                 | COUNTRY | CATEGORY       |
++------+------------+------------------------+---------+----------------+
+| 1994 | Literature | Kenzaburo Oe           | Japan   | Linguist       |
+| 1994 | Economics  | Reinhard Selten        | Germany | Economist      |
+| 1994 | Peace      | Yitzhak Rabin          | Israel  | Prime Minister |
+| 1987 | Chemistry  | Donald J. Cram         | USA     | Scientist      |
+| 1987 | Chemistry  | Jean-Marie Lehn        | France  | Scientist      |
+| 1987 | Physics    | Johannes Georg Bednorz | Germany | Scientist      |
+| 1987 | Literature | Joseph Brodsky         | Russia  | Linguist       |
+| 1987 | Economics  | Robert Solow           | USA     | Economist      |
+| 1987 | Physiology | Susumu Tonegawa        | Japan   | Scientist      |
+| 1978 | Peace      | Anwar al-Sadat         | Egypt   | President      |
+| 1978 | Peace      | Menachem Begin         | Israel  | Prime Minister |
+| 1971 | Physics    | Dennis Gabor           | Hungary | Scientist      |
+| 1971 | Chemistry  | Gerhard Herzberg       | Germany | Scientist      |
+| 1971 | Economics  | Simon Kuznets          | Russia  | Economist      |
+| 1971 | Peace      | Willy Brandt           | Germany | Chancellor     |
+| 1970 | Literature | Aleksandr Solzhenitsyn | Russia  | Linguist       |
+| 1970 | Physiology | Bernard Katz           | Germany | Scientist      |
+| 1970 | Physics    | Hannes Alfven          | Sweden  | Scientist      |
+| 1970 | Physiology | Julius Axelrod         | USA     | Scientist      |
+| 1970 | Physics    | Louis Neel             | France  | Scientist      |
+| 1970 | Chemistry  | Luis Federico Leloir   | France  | Scientist      |
+| 1970 | Physiology | Ulf von Euler          | Sweden  | Scientist      |
++------+------------+------------------------+---------+----------------+
+22 rows in set (0.00 sec)
+
+mysql> select * from nobel_win order by winner,year desc;
++------+------------+------------------------+---------+----------------+
+| YEAR | SUBJECT    | WINNER                 | COUNTRY | CATEGORY       |
++------+------------+------------------------+---------+----------------+
+| 1970 | Literature | Aleksandr Solzhenitsyn | Russia  | Linguist       |
+| 1978 | Peace      | Anwar al-Sadat         | Egypt   | President      |
+| 1970 | Physiology | Bernard Katz           | Germany | Scientist      |
+| 1971 | Physics    | Dennis Gabor           | Hungary | Scientist      |
+| 1987 | Chemistry  | Donald J. Cram         | USA     | Scientist      |
+| 1971 | Chemistry  | Gerhard Herzberg       | Germany | Scientist      |
+| 1970 | Physics    | Hannes Alfven          | Sweden  | Scientist      |
+| 1987 | Chemistry  | Jean-Marie Lehn        | France  | Scientist      |
+| 1987 | Physics    | Johannes Georg Bednorz | Germany | Scientist      |
+| 1987 | Literature | Joseph Brodsky         | Russia  | Linguist       |
+| 1970 | Physiology | Julius Axelrod         | USA     | Scientist      |
+| 1994 | Literature | Kenzaburo Oe           | Japan   | Linguist       |
+| 1970 | Physics    | Louis Neel             | France  | Scientist      |
+| 1970 | Chemistry  | Luis Federico Leloir   | France  | Scientist      |
+| 1978 | Peace      | Menachem Begin         | Israel  | Prime Minister |
+| 1971 | Literature | Pablo Neruda           | Chile   | Linguist       |
+| 1970 | Economics  | Paul Samuelson         | USA     | Economist      |
+| 1994 | Economics  | Reinhard Selten        | Germany | Economist      |
+| 1987 | Economics  | Robert Solow           | USA     | Economist      |
+| 1971 | Economics  | Simon Kuznets          | Russia  | Economist      |
+| 1987 | Physiology | Susumu Tonegawa        | Japan   | Scientist      |
+| 1970 | Physiology | Ulf von Euler          | Sweden  | Scientist      |
+| 1971 | Peace      | Willy Brandt           | Germany | Chancellor     |
+| 1994 | Peace      | Yitzhak Rabin          | Israel  | Prime Minister |
++------+------------+------------------------+---------+----------------+
+24 rows in set (0.00 sec)
+
+mysql> select * from nobel_win order by year,winner desc;
++------+------------+------------------------+---------+----------------+
+| YEAR | SUBJECT    | WINNER                 | COUNTRY | CATEGORY       |
++------+------------+------------------------+---------+----------------+
+| 1970 | Physiology | Ulf von Euler          | Sweden  | Scientist      |
+| 1970 | Economics  | Paul Samuelson         | USA     | Economist      |
+| 1970 | Chemistry  | Luis Federico Leloir   | France  | Scientist      |
+| 1970 | Physics    | Louis Neel             | France  | Scientist      |
+| 1970 | Physiology | Julius Axelrod         | USA     | Scientist      |
+| 1970 | Physics    | Hannes Alfven          | Sweden  | Scientist      |
+| 1970 | Physiology | Bernard Katz           | Germany | Scientist      |
+| 1970 | Literature | Aleksandr Solzhenitsyn | Russia  | Linguist       |
+| 1971 | Peace      | Willy Brandt           | Germany | Chancellor     |
+| 1971 | Economics  | Simon Kuznets          | Russia  | Economist      |
+| 1971 | Literature | Pablo Neruda           | Chile   | Linguist       |
+| 1971 | Chemistry  | Gerhard Herzberg       | Germany | Scientist      |
+| 1971 | Physics    | Dennis Gabor           | Hungary | Scientist      |
+| 1978 | Peace      | Menachem Begin         | Israel  | Prime Minister |
+| 1978 | Peace      | Anwar al-Sadat         | Egypt   | President      |
+| 1987 | Physiology | Susumu Tonegawa        | Japan   | Scientist      |
+| 1987 | Economics  | Robert Solow           | USA     | Economist      |
+| 1987 | Literature | Joseph Brodsky         | Russia  | Linguist       |
+| 1987 | Physics    | Johannes Georg Bednorz | Germany | Scientist      |
+| 1987 | Chemistry  | Jean-Marie Lehn        | France  | Scientist      |
+| 1987 | Chemistry  | Donald J. Cram         | USA     | Scientist      |
+| 1994 | Peace      | Yitzhak Rabin          | Israel  | Prime Minister |
+| 1994 | Economics  | Reinhard Selten        | Germany | Economist      |
+| 1994 | Literature | Kenzaburo Oe           | Japan   | Linguist       |
++------+------------+------------------------+---------+----------------+
+24 rows in set (0.00 sec)
+
+mysql> select * from nobel_win where year = 1970
+    -> order by 
+    -> case
+    -> when subject in ('Chemistry','Economics')then 1
+    -> Eles 0
+    -> end,
+    -> subject asc;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'Eles 0
+end,
+subject asc' at line 5
+mysql> SELECT year, subject, winner, country, category
+    -> FROM nobel_prizes
+    -> WHERE year = 1970
+    -> ORDER BY 
+    ->   CASE 
+    ->     WHEN subject IN ('Chemistry', 'Economics') THEN 1
+    ->     ELSE 0
+    ->   END,
+    ->   subject ASC;
+ERROR 1146 (42S02): Table 'pizza.nobel_prizes' doesn't exist
+mysql> SELECT * FROM nobel_win WHERE year = 1970 ORDER BY    CASE      WHEN subject IN ('Chemistry', 'Economics') THEN 1     ELSE 0   END,   subject ASC;
++------+------------+------------------------+---------+-----------+
+| YEAR | SUBJECT    | WINNER                 | COUNTRY | CATEGORY  |
++------+------------+------------------------+---------+-----------+
+| 1970 | Literature | Aleksandr Solzhenitsyn | Russia  | Linguist  |
+| 1970 | Physics    | Hannes Alfven          | Sweden  | Scientist |
+| 1970 | Physics    | Louis Neel             | France  | Scientist |
+| 1970 | Physiology | Ulf von Euler          | Sweden  | Scientist |
+| 1970 | Physiology | Bernard Katz           | Germany | Scientist |
+| 1970 | Physiology | Julius Axelrod         | USA     | Scientist |
+| 1970 | Chemistry  | Luis Federico Leloir   | France  | Scientist |
+| 1970 | Economics  | Paul Samuelson         | USA     | Economist |
++------+------------+------------------------+---------+-----------+
+8 rows in set (0.02 sec)
+
+mysql> CREATE TABLE item_mast (
+    ->     PRO_ID INT PRIMARY KEY,
+    ->     PRO_NAME VARCHAR(50),
+    ->     PRO_PRICE DECIMAL(10, 2),
+    ->     PRO_COM INT
+    -> );
+Query OK, 0 rows affected (0.06 sec)
+
+mysql> INSERT INTO item_mast (PRO_ID, PRO_NAME, PRO_PRICE, PRO_COM) VALUES
+    -> (101, 'Mother Board', 3200, 15),
+    -> (102, 'Key Board', 450, 16),
+    -> (103, 'ZIP drive', 250, 14),
+    -> (104, 'Speaker', 550, 16),
+    -> (105, 'Monitor', 5000, 11),
+    -> (106, 'DVD drive', 900, 12),
+    -> (107, 'CD drive', 800, 12),
+    -> (108, 'Printer', 2600, 13),
+    -> (109, 'Refill cartridge', 350, 13),
+    -> (110, 'Mouse', 250, 12);
+Query OK, 10 rows affected (0.00 sec)
+Records: 10  Duplicates: 0  Warnings: 0
+
+mysql> select * from item_mast
+    -> where pro_price BETWEEN 200 and 600;
++--------+------------------+-----------+---------+
+| PRO_ID | PRO_NAME         | PRO_PRICE | PRO_COM |
++--------+------------------+-----------+---------+
+|    102 | Key Board        |    450.00 |      16 |
+|    103 | ZIP drive        |    250.00 |      14 |
+|    104 | Speaker          |    550.00 |      16 |
+|    109 | Refill cartridge |    350.00 |      13 |
+|    110 | Mouse            |    250.00 |      12 |
++--------+------------------+-----------+---------+
+5 rows in set (0.00 sec)
+
+mysql> select avg(pro_com) from item_mast where group by pro_com having pro_com=16;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'group by pro_com having pro_com=16' at line 1
+mysql> select avg(pro_com) from item_mast group by pro_com having pro_com=16;
++--------------+
+| avg(pro_com) |
++--------------+
+|      16.0000 |
++--------------+
+1 row in set (0.01 sec)
+
+mysql> select avg(pro_price),pro_com  from item_mast group by pro_com having pro
+_com=16;
++----------------+---------+
+| avg(pro_price) | pro_com |
++----------------+---------+
+|     500.000000 |      16 |
++----------------+---------+
+1 row in set (0.00 sec)
+
+mysql> select * from item_mast where pro_price >= 250 order by pro_price desc,prname asc;
+ERROR 1054 (42S22): Unknown column 'prname' in 'order clause'
+mysql> select * from item_mast where pro_price >= 250 order by pro_price desc pro_name asc;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'pro_name asc' at line 1
+mysql> select * from item_mast where pro_price >= 250 order by pro_price desc ,pro_name asc;
++--------+------------------+-----------+---------+
+| PRO_ID | PRO_NAME         | PRO_PRICE | PRO_COM |
++--------+------------------+-----------+---------+
+|    105 | Monitor          |   5000.00 |      11 |
+|    101 | Mother Board     |   3200.00 |      15 |
+|    108 | Printer          |   2600.00 |      13 |
+|    106 | DVD drive        |    900.00 |      12 |
+|    107 | CD drive         |    800.00 |      12 |
+|    104 | Speaker          |    550.00 |      16 |
+|    102 | Key Board        |    450.00 |      16 |
+|    109 | Refill cartridge |    350.00 |      13 |
+|    110 | Mouse            |    250.00 |      12 |
+|    103 | ZIP drive        |    250.00 |      14 |
++--------+------------------+-----------+---------+
+10 rows in set (0.00 sec)
+
+mysql> select * from item_mast where pro_price >= 250 order by pro_price ,pro_name asc;
++--------+------------------+-----------+---------+
+| PRO_ID | PRO_NAME         | PRO_PRICE | PRO_COM |
++--------+------------------+-----------+---------+
+|    110 | Mouse            |    250.00 |      12 |
+|    103 | ZIP drive        |    250.00 |      14 |
+|    109 | Refill cartridge |    350.00 |      13 |
+|    102 | Key Board        |    450.00 |      16 |
+|    104 | Speaker          |    550.00 |      16 |
+|    107 | CD drive         |    800.00 |      12 |
+|    106 | DVD drive        |    900.00 |      12 |
+|    108 | Printer          |   2600.00 |      13 |
+|    101 | Mother Board     |   3200.00 |      15 |
+|    105 | Monitor          |   5000.00 |      11 |
++--------+------------------+-----------+---------+
+10 rows in set (0.00 sec)
+
+mysql> select * from item_mast where pro_price >= 250 order by pro_price ,pro_name asc,desc;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'desc' at line 1
+mysql> select * from item_mast where pro_price >= 250 order by pro_price ,pro_name desc;
++--------+------------------+-----------+---------+
+| PRO_ID | PRO_NAME         | PRO_PRICE | PRO_COM |
++--------+------------------+-----------+---------+
+|    103 | ZIP drive        |    250.00 |      14 |
+|    110 | Mouse            |    250.00 |      12 |
+|    109 | Refill cartridge |    350.00 |      13 |
+|    102 | Key Board        |    450.00 |      16 |
+|    104 | Speaker          |    550.00 |      16 |
+|    107 | CD drive         |    800.00 |      12 |
+|    106 | DVD drive        |    900.00 |      12 |
+|    108 | Printer          |   2600.00 |      13 |
+|    101 | Mother Board     |   3200.00 |      15 |
+|    105 | Monitor          |   5000.00 |      11 |
++--------+------------------+-----------+---------+
+10 rows in set (0.00 sec)
+
+mysql> select avg(pro_price),pro_com  from item_mast group by pro_com ;
++----------------+---------+
+| avg(pro_price) | pro_com |
++----------------+---------+
+|    3200.000000 |      15 |
+|     500.000000 |      16 |
+|     250.000000 |      14 |
+|    5000.000000 |      11 |
+|     650.000000 |      12 |
+|    1475.000000 |      13 |
++----------------+---------+
+6 rows in set (0.00 sec)
+
+mysql> select avg(pro_price),pro_com  from item_mast;
+ERROR 1140 (42000): In aggregated query without GROUP BY, expression #2 of SELECT list contains nonaggregated column 'pizza.item_mast.PRO_COM'; this is incompatible with sql_mode=only_full_group_by
+mysql> select avg(pro_price),pro_com  from item_mast group by pro_price;
+ERROR 1055 (42000): Expression #2 of SELECT list is not in GROUP BY clause and contains nonaggregated column 'pizza.item_mast.PRO_COM' which is not functionally dependent on columns in GROUP BY clause; this is incompatible with sql_mode=only_full_group_by
+mysql> select avg(pro_price),pro_com  from item_mast group by ;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1
+mysql> select avg(pro_price) as avg_price from item_mast;
++-------------+
+| avg_price   |
++-------------+
+| 1435.000000 |
++-------------+
+1 row in set (0.00 sec)
+
+mysql> 
